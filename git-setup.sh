@@ -22,27 +22,32 @@ echo "Creating directory and files..."
 # Initialize npm project
 npm init -y
 
-# Install ESLint and eslint-config-prettier locally
-npm i eslint eslint-config-prettier -D
+# Ask user if they want to install ESLint and Prettier
+read -p "Do you want to install ESLint and Prettier? (y/n): " install_eslint_prettier
 
-# Initialize ESLint configuration
-npx eslint --init
+if [ "$install_eslint_prettier" == "y" ]; then
+  # Install ESLint and eslint-config-prettier locally
+  npm i eslint eslint-config-prettier -D
 
-# Add eslint-config-prettier to the ESLint configuration
-ESLINTRC_FILES=(".eslintrc.json" ".eslintrc.js" ".eslintrc.yaml" ".eslintrc.yml" ".eslintrc")
-for FILE in "${ESLINTRC_FILES[@]}"; do
-  if [ -f "$FILE" ]; then
-    if [[ "$FILE" == *".json" ]]; then
-      jq '.extends += ["prettier"]' "$FILE" > ".tmp" && mv ".tmp" "$FILE"
-    elif [[ "$FILE" == *".js" ]]; then
-      sed -i "s/extends: \[/extends: \[\"prettier\", /g" "$FILE"
-    elif [[ "$FILE" == *".yaml" || "$FILE" == *".yml" ]]; then
-      sed -i "s/extends:/extends: [\"prettier\", /g" "$FILE"
-      sed -i "/extends: \[\"prettier\", /a ]" "$FILE"
+  # Initialize ESLint configuration
+  npx eslint --init
+
+  # Add eslint-config-prettier to the ESLint configuration
+  ESLINTRC_FILES=(".eslintrc.json" ".eslintrc.js" ".eslintrc.yaml" ".eslintrc.yml" ".eslintrc")
+  for FILE in "${ESLINTRC_FILES[@]}"; do
+    if [ -f "$FILE" ]; then
+      if [[ "$FILE" == *".json" ]]; then
+        jq '.extends += ["prettier"]' "$FILE" > ".tmp" && mv ".tmp" "$FILE"
+      elif [[ "$FILE" == *".js" ]]; then
+        sed -i "s/extends: \[/extends: \[\"prettier\", /g" "$FILE"
+      elif [[ "$FILE" == *".yaml" || "$FILE" == *".yml" ]]; then
+        sed -i "s/extends:/extends: [\"prettier\", /g" "$FILE"
+        sed -i "/extends: \[\"prettier\", /a ]" "$FILE"
+      fi
+      break
     fi
-    break
-  fi
-done
+  done
+fi
 
 # Initiate git repo and commit all files
 git init -b main
